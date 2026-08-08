@@ -34,8 +34,10 @@ const App: React.FC = () => {
   useEffect(() => {
     getConfig()
       .then((cfg) => {
-        setClassName(cfg.tshirt.className);
-        setClassYear(cfg.tshirt.classYear);
+        if (cfg?.tshirt) {
+          setClassName(cfg.tshirt.className || 'CKL TECH');
+          setClassYear(cfg.tshirt.classYear || '2026');
+        }
       })
       .catch(() => {
         // Fallback
