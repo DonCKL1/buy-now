@@ -9,6 +9,9 @@ import adminRoutes from './routes/adminRoutes';
 
 const app = express();
 
+// Trust reverse proxy (Render load balancer) for rate limiting
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(
   helmet({
