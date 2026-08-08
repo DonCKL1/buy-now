@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
             <h1 className="brand-title-dark">{className}</h1>
             <p className="brand-subtitle-dark">
               <FiAward className="inline-icon" style={{ marginRight: 3, color: '#2563eb' }} />
-              Class Collection · {classYear}
+              Class of {classYear}
             </p>
           </div>
         </Link>
