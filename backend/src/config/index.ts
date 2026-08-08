@@ -5,11 +5,11 @@ export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
 
   database: {
-    host: process.env.MYSQLHOST || process.env.DATABASE_HOST || 'localhost',
-    port: parseInt(process.env.MYSQLPORT || process.env.DATABASE_PORT || '3306', 10),
-    name: process.env.MYSQLDATABASE || process.env.DATABASE_NAME || 'final_year_tshirt',
-    user: process.env.MYSQLUSER || process.env.DATABASE_USER || 'root',
-    password: process.env.MYSQLPASSWORD || process.env.DATABASE_PASSWORD || '',
+    host: process.env.DATABASE_HOST || process.env.MYSQLHOST || 'localhost',
+    port: parseInt(process.env.DATABASE_PORT || process.env.MYSQLPORT || '3306', 10),
+    name: process.env.DATABASE_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || 'railway',
+    user: process.env.DATABASE_USER || process.env.MYSQLUSER || 'root',
+    password: process.env.DATABASE_PASSWORD || process.env.MYSQLPASSWORD || process.env.MYSQL_ROOT_PASSWORD || '',
   },
 
   paystack: {
