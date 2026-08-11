@@ -26,7 +26,7 @@ export const sendPurchaseSuccessSMS = async ({ to, name, orderReference }: SendS
       return false;
     }
 
-    const message = `Hello ${name}, your order ${orderReference} has been received! You will be contacted via phone call and the item will be delivered within 48 to 72 hours. Thank you for celebrating with ${config.tshirt.className}!`;
+    const message = `Dear ${name}, your order #${orderReference} is confirmed. Our team will contact you shortly for delivery within 48-72 hours. Thank you for your purchase! - ${config.tshirt.className}`;
 
     const response = await axios.get('https://sms.arkesel.com/sms/api', {
       params: {
