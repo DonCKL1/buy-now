@@ -74,8 +74,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
       {subtotal > 0 && (
         <div className="summary-row" style={{ color: '#666', fontSize: '0.9rem' }}>
-          <span className="label">Processing Fee ({(feePercentage || 0)}%)</span>
-          <span className="value">GHS {((subtotal / (1 - (feePercentage || 0) / 100)) - subtotal).toFixed(2)}</span>
+          <span className="label">Processing Fee ({(feePercentage || 2)}%)</span>
+          <span className="value">GHS {(subtotal * ((feePercentage || 2) / 100)).toFixed(2)}</span>
         </div>
       )}
 
@@ -83,7 +83,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
       <div className="summary-total">
         <span className="label">Total Amount</span>
-        <span className="value">GHS {(subtotal > 0 ? (subtotal / (1 - (feePercentage || 0) / 100)) : 0).toFixed(2)}</span>
+        <span className="value">GHS {(subtotal + (subtotal * ((feePercentage || 2) / 100))).toFixed(2)}</span>
       </div>
     </div>
   );
