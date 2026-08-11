@@ -39,7 +39,7 @@ export const calculateOrderAmount = (quantity: number, sizePayload?: string): nu
     if (sizePayload && sizePayload.startsWith('{')) {
       const items = JSON.parse(sizePayload);
       if (items.classicTshirt?.qty) baseAmount += config.tshirt.price * items.classicTshirt.qty;
-      if (items.limitedTshirt?.qty) baseAmount += 100 * items.limitedTshirt.qty;
+      if (items.limitedTshirt?.qty) baseAmount += 80 * items.limitedTshirt.qty;
       if (items.mug?.qty) baseAmount += 60 * items.mug.qty;
       if (items.bag?.qty) baseAmount += 80 * items.bag.qty;
     } else {

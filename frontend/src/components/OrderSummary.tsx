@@ -22,7 +22,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   bagQty,
   price,
 }) => {
-  const subtotal = (classicTshirtQty * price) + (limitedTshirtQty * 100) + (mugQty * 60) + (bagQty * 80);
+  const subtotal = (classicTshirtQty * price) + (limitedTshirtQty * 80) + (mugQty * 60) + (bagQty * 80);
 
   return (
     <div className="summary-card">
@@ -44,7 +44,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         <div className="summary-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <span className="label">Limited Edition T-Shirt (x{limitedTshirtQty})</span>
-            <span className="value">GHS {(limitedTshirtQty * 100).toFixed(2)}</span>
+            <span className="value">GHS {(limitedTshirtQty * 80).toFixed(2)}</span>
           </div>
           <div style={{ fontSize: '0.85rem', color: '#666' }}>
             Sizes: {limitedTshirtSizes.filter(s => s).join(', ') || 'Not selected'}

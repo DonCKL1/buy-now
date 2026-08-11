@@ -106,7 +106,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const totalAmount = (classicTshirtQty * price) + (limitedTshirtQty * 100) + (mugQty * 60) + (bagQty * 80);
+  const totalAmount = (classicTshirtQty * price) + (limitedTshirtQty * 80) + (mugQty * 60) + (bagQty * 80);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -146,7 +146,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
 
             {/* Limited Edition T-Shirt */}
             <div style={{ marginBottom: limitedTshirtQty > 0 ? '15px' : '0' }}>
-              <QuantityControl label="Limited Edition T-Shirt" price={100} quantity={limitedTshirtQty} onChange={onLimitedTshirtQtyChange} min={0} />
+              <QuantityControl label="Limited Edition T-Shirt" price={80} quantity={limitedTshirtQty} onChange={onLimitedTshirtQtyChange} min={0} />
               {limitedTshirtQty > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   {Array.from({ length: limitedTshirtQty }).map((_, i) => (

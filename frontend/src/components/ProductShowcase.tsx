@@ -36,7 +36,7 @@ const ProductShowcase: React.FC<ProductShowcaseProps> = ({
       id: 'limited_tshirt',
       name: 'Limited Edition T-Shirt',
       desc: 'Designed with precision for our graduating cohort. Featuring high-grade fabric, durable stitching, and custom insignia representing our tech legacy.',
-      price: 100,
+      price: 80,
       image: '/tshirt2.jpeg',
       hasSizes: true,
       features: [
