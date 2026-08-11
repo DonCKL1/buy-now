@@ -90,7 +90,8 @@ export const deleteOrder = async (req: Request, res: Response): Promise<void> =>
 export const exportOrders = async (req: Request, res: Response): Promise<void> => {
   try {
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
-    const orders = await orderService.getAllOrders(undefined, status);
+    const deliveryStatus = typeof req.query.delivery_status === 'string' ? req.query.delivery_status : undefined;
+    const orders = await orderService.getAllOrders(undefined, status, deliveryStatus);
 
     const formatSizePayload = (sizeStr: string) => {
       if (!sizeStr || !sizeStr.startsWith('{')) return sizeStr;

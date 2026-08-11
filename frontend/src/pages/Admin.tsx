@@ -226,7 +226,7 @@ const Admin: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      await exportOrdersCSV(statusFilter || undefined);
+      await exportOrdersCSV(statusFilter || undefined, deliveryFilter || undefined);
       Swal.fire({
         icon: 'success',
         title: 'Export Complete',

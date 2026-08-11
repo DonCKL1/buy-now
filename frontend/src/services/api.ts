@@ -174,9 +174,10 @@ export const getStats = async (): Promise<Stats> => {
   return data.stats;
 };
 
-export const exportOrdersCSV = async (status?: string): Promise<void> => {
+export const exportOrdersCSV = async (status?: string, deliveryStatus?: string): Promise<void> => {
   const params: Record<string, string> = {};
   if (status) params.status = status;
+  if (deliveryStatus) params.delivery_status = deliveryStatus;
 
   const { data } = await api.get('/admin/orders/export', {
     headers: getAdminHeaders(),
