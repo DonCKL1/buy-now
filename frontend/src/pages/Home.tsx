@@ -46,14 +46,88 @@ const Home: React.FC<HomeProps> = ({
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Form state
-  const [size, setSize] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  const [classicTshirtQty, setClassicTshirtQty] = useState(1);
+  const [classicTshirtSizes, setClassicTshirtSizes] = useState<string[]>(['']);
+  const [limitedTshirtQty, setLimitedTshirtQty] = useState(0);
+  const [limitedTshirtSizes, setLimitedTshirtSizes] = useState<string[]>([]);
+  const [mugQty, setMugQty] = useState(0);
+  const [bagQty, setBagQty] = useState(0);
   const [name, setName] = useState('');
   const [indexNumber, setIndexNumber] = useState('');
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  const handleClassicTshirtQtyChange = (qty: number) => {
+    setClassicTshirtQty(qty);
+    setClassicTshirtSizes(prev => {
+      const newSizes = [...prev];
+      if (qty > prev.length) {
+        for (let i = prev.length; i < qty; i++) newSizes.push('');
+      } else if (qty < prev.length) {
+        return newSizes.slice(0, qty);
+      }
+      return newSizes;
+    });
+  };
+
+  const handleClassicTshirtSizeChange = (index: number, newSize: string) => {
+    setClassicTshirtSizes(prev => {
+      const newSizes = [...prev];
+      newSizes[index] = newSize;
+      return newSizes;
+    });
+  };
+
+  const handleLimitedTshirtQtyChange = (qty: number) => {
+    setLimitedTshirtQty(qty);
+    setLimitedTshirtSizes(prev => {
+      const newSizes = [...prev];
+      if (qty > prev.length) {
+        for (let i = prev.length; i < qty; i++) newSizes.push('');
+      } else if (qty < prev.length) {
+        return newSizes.slice(0, qty);
+      }
+      return newSizes;
+    });
+  };
+
+  const handleLimitedTshirtSizeChange = (index: number, newSize: string) => {
+    setLimitedTshirtSizes(prev => {
+      const newSizes = [...prev];
+      newSizes[index] = newSize;
+      return newSizes;
+    });
+  };
+
+  const handleProductOrderClick = (itemId?: string) => {
+    // Reset all quantities to 0
+    setClassicTshirtQty(0);
+    setClassicTshirtSizes([]);
+    setLimitedTshirtQty(0);
+    setLimitedTshirtSizes([]);
+    setMugQty(0);
+    setBagQty(0);
+
+    // Set the clicked item to 1
+    if (itemId === 'classic_tshirt') {
+      setClassicTshirtQty(1);
+      setClassicTshirtSizes(['']);
+    } else if (itemId === 'limited_tshirt') {
+      setLimitedTshirtQty(1);
+      setLimitedTshirtSizes(['']);
+    } else if (itemId === 'mug') {
+      setMugQty(1);
+    } else if (itemId === 'bag') {
+      setBagQty(1);
+    } else {
+      // Default fallback (e.g. from Hero section)
+      setClassicTshirtQty(1);
+      setClassicTshirtSizes(['']);
+    }
+
+    onOpenModal();
+  };
 
   // Page state
   const [pageState, setPageState] = useState<PageState>('order');
@@ -109,8 +183,8 @@ const Home: React.FC<HomeProps> = ({
             order_reference: result.order.order_reference,
             name: result.order.name || name || 'Student',
             amount: result.order.amount || 0,
-            size: result.order.size || size || 'L',
-            quantity: result.order.quantity || quantity || 1,
+            size: result.order.size || JSON.stringify({ classicTshirt: { qty: classicTshirtQty, sizes: classicTshirtSizes }, limitedTshirt: { qty: limitedTshirtQty, sizes: limitedTshirtSizes }, mug: { qty: mugQty }, bag: { qty: bagQty } }),
+            quantity: result.order.quantity || (classicTshirtQty + limitedTshirtQty + mugQty + bagQty),
           });
           setPageState('success');
           onCloseModal();
@@ -129,7 +203,7 @@ const Home: React.FC<HomeProps> = ({
       }
       setSearchParams({});
     },
-    [setSearchParams, name, size, quantity, onCloseModal]
+    [setSearchParams, name, classicTshirtQty, classicTshirtSizes, limitedTshirtQty, limitedTshirtSizes, mugQty, bagQty, onCloseModal]
   );
 
   useEffect(() => {
@@ -146,7 +220,18 @@ const Home: React.FC<HomeProps> = ({
     if (!indexNumber.trim()) newErrors.index_number = 'Please enter your index number';
     if (!phone.trim()) newErrors.phone = 'Please enter your phone number';
     else if (phone.trim().length < 9) newErrors.phone = 'Please enter a valid phone number';
-    if (!size) newErrors.size = 'Please select a size';
+    
+    if (classicTshirtQty > 0 && classicTshirtSizes.some(s => !s)) {
+      newErrors.size = 'Please select a size for all classic t-shirts';
+    }
+    
+    if (limitedTshirtQty > 0 && limitedTshirtSizes.some(s => !s)) {
+      newErrors.size = 'Please select a size for all limited edition t-shirts';
+    }
+    
+    if (classicTshirtQty === 0 && limitedTshirtQty === 0 && mugQty === 0 && bagQty === 0) {
+      newErrors.quantity = 'Please select at least one item';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -158,13 +243,21 @@ const Home: React.FC<HomeProps> = ({
     setSubmitting(true);
 
     try {
+      const sizePayload = JSON.stringify({
+        classicTshirt: { qty: classicTshirtQty, sizes: classicTshirtSizes },
+        limitedTshirt: { qty: limitedTshirtQty, sizes: limitedTshirtSizes },
+        mug: { qty: mugQty },
+        bag: { qty: bagQty }
+      });
+      const totalQty = classicTshirtQty + limitedTshirtQty + mugQty + bagQty;
+
       // Step 1: Create order on backend
       const orderResponse = await createOrder({
         name: name.trim(),
         index_number: indexNumber.trim(),
         phone: phone.trim(),
-        size,
-        quantity,
+        size: sizePayload,
+        quantity: totalQty,
       });
 
       // Step 2: Initialize payment on backend
@@ -173,8 +266,8 @@ const Home: React.FC<HomeProps> = ({
         name: name.trim(),
         index_number: indexNumber.trim(),
         phone: phone.trim(),
-        size,
-        quantity,
+        size: sizePayload,
+        quantity: totalQty,
       });
 
       // Step 3: Paystack Inline Popup
@@ -189,8 +282,7 @@ const Home: React.FC<HomeProps> = ({
             custom_fields: [
               { display_name: 'Name', variable_name: 'name', value: name.trim() },
               { display_name: 'Index Number', variable_name: 'index_number', value: indexNumber.trim() },
-              { display_name: 'Size', variable_name: 'size', value: size },
-              { display_name: 'Quantity', variable_name: 'quantity', value: quantity },
+              { display_name: 'Items', variable_name: 'items', value: sizePayload },
             ],
           },
           onClose: () => {
@@ -220,8 +312,12 @@ const Home: React.FC<HomeProps> = ({
   };
 
   const resetForm = () => {
-    setSize('');
-    setQuantity(1);
+    setClassicTshirtQty(1);
+    setClassicTshirtSizes(['']);
+    setLimitedTshirtQty(0);
+    setLimitedTshirtSizes([]);
+    setMugQty(0);
+    setBagQty(0);
     setName('');
     setIndexNumber('');
     setPhone('');
@@ -285,7 +381,7 @@ const Home: React.FC<HomeProps> = ({
         className={config.tshirt.className}
         classYear={config.tshirt.classYear}
         price={price}
-        onOrderClick={onOpenModal}
+        onOrderClick={() => handleProductOrderClick()}
       />
 
       {/* Dedicated T-Shirt Showcase Section */}
@@ -294,7 +390,7 @@ const Home: React.FC<HomeProps> = ({
         className={config.tshirt.className}
         classYear={config.tshirt.classYear}
         price={price}
-        onOrderClick={onOpenModal}
+        onOrderClick={handleProductOrderClick}
       />
 
       {/* Order Popup Modal */}
@@ -306,15 +402,23 @@ const Home: React.FC<HomeProps> = ({
         classYear={config.tshirt.classYear}
         price={price}
         feePercentage={feePct}
-        size={size}
-        quantity={quantity}
+        classicTshirtQty={classicTshirtQty}
+        classicTshirtSizes={classicTshirtSizes}
+        limitedTshirtQty={limitedTshirtQty}
+        limitedTshirtSizes={limitedTshirtSizes}
+        mugQty={mugQty}
+        bagQty={bagQty}
         name={name}
         indexNumber={indexNumber}
         phone={phone}
         errors={errors}
         submitting={submitting}
-        onSizeSelect={setSize}
-        onQuantityChange={setQuantity}
+        onClassicTshirtSizeChange={handleClassicTshirtSizeChange}
+        onClassicTshirtQtyChange={handleClassicTshirtQtyChange}
+        onLimitedTshirtSizeChange={handleLimitedTshirtSizeChange}
+        onLimitedTshirtQtyChange={handleLimitedTshirtQtyChange}
+        onMugQtyChange={setMugQty}
+        onBagQtyChange={setBagQty}
         onNameChange={setName}
         onIndexNumberChange={setIndexNumber}
         onPhoneChange={setPhone}

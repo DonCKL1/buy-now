@@ -1,7 +1,5 @@
 import React from 'react';
-import { FiX, FiLock, FiShield, FiShoppingBag } from 'react-icons/fi';
-import SizeSelector from './SizeSelector';
-import QuantitySelector from './QuantitySelector';
+import { FiX, FiLock, FiShield, FiShoppingBag, FiMinus, FiPlus } from 'react-icons/fi';
 import OrderForm from './OrderForm';
 import OrderSummary from './OrderSummary';
 
@@ -13,20 +11,68 @@ interface OrderModalProps {
   classYear: string;
   price: number;
   feePercentage: number;
-  size: string;
-  quantity: number;
+  classicTshirtQty: number;
+  classicTshirtSizes: string[];
+  limitedTshirtQty: number;
+  limitedTshirtSizes: string[];
+  mugQty: number;
+  bagQty: number;
   name: string;
   indexNumber: string;
   phone: string;
   errors: Record<string, string>;
   submitting: boolean;
-  onSizeSelect: (size: string) => void;
-  onQuantityChange: (qty: number) => void;
+  onClassicTshirtSizeChange: (index: number, size: string) => void;
+  onClassicTshirtQtyChange: (qty: number) => void;
+  onLimitedTshirtSizeChange: (index: number, size: string) => void;
+  onLimitedTshirtQtyChange: (qty: number) => void;
+  onMugQtyChange: (qty: number) => void;
+  onBagQtyChange: (qty: number) => void;
   onNameChange: (val: string) => void;
   onIndexNumberChange: (val: string) => void;
   onPhoneChange: (val: string) => void;
   onSubmit: () => void;
 }
+
+const QuantityControl = ({ label, price, quantity, onChange, min = 0 }: any) => (
+  <div className="item-qty-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #eee' }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <strong style={{ fontSize: '1.1rem', color: '#333' }}>{label}</strong>
+      <span style={{ color: '#666', fontSize: '0.95rem' }}>GHS {price.toFixed(2)}</span>
+    </div>
+    <div className="quantity-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px', background: '#f8f9fa', padding: '5px', borderRadius: '8px' }}>
+      <button type="button" className="qty-btn" style={{ padding: '8px', border: 'none', background: '#fff', borderRadius: '5px', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }} onClick={() => onChange(Math.max(min, quantity - 1))} disabled={quantity <= min}><FiMinus /></button>
+      <span style={{ width: '25px', textAlign: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>{quantity}</span>
+      <button type="button" className="qty-btn" style={{ padding: '8px', border: 'none', background: '#fff', borderRadius: '5px', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }} onClick={() => onChange(quantity + 1)}><FiPlus /></button>
+    </div>
+  </div>
+);
+
+const SizeDropdown = ({ label, selected, onSelect }: any) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', background: '#fafafa', padding: '10px', borderRadius: '8px', border: '1px solid #f0f0f0' }}>
+    <label style={{ fontSize: '0.9rem', color: '#444', minWidth: '70px', fontWeight: 600 }}>{label}:</label>
+    <select
+      value={selected}
+      onChange={(e) => onSelect(e.target.value)}
+      style={{
+        padding: '8px',
+        borderRadius: '5px',
+        border: '1px solid #ccc',
+        flex: 1,
+        background: '#fff',
+        outline: 'none',
+        fontSize: '0.9rem'
+      }}
+    >
+      <option value="" disabled>Select Size</option>
+      <option value="S">Small (S)</option>
+      <option value="M">Medium (M)</option>
+      <option value="L">Large (L)</option>
+      <option value="XL">X-Large (XL)</option>
+      <option value="XXL">2X-Large (XXL)</option>
+    </select>
+  </div>
+);
 
 const OrderModal: React.FC<OrderModalProps> = ({
   isOpen,
@@ -36,15 +82,23 @@ const OrderModal: React.FC<OrderModalProps> = ({
   classYear,
   price,
   feePercentage,
-  size,
-  quantity,
+  classicTshirtQty,
+  classicTshirtSizes,
+  limitedTshirtQty,
+  limitedTshirtSizes,
+  mugQty,
+  bagQty,
   name,
   indexNumber,
   phone,
   errors,
   submitting,
-  onSizeSelect,
-  onQuantityChange,
+  onClassicTshirtSizeChange,
+  onClassicTshirtQtyChange,
+  onLimitedTshirtSizeChange,
+  onLimitedTshirtQtyChange,
+  onMugQtyChange,
+  onBagQtyChange,
   onNameChange,
   onIndexNumberChange,
   onPhoneChange,
@@ -52,7 +106,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const totalAmount = quantity * price;
+  const totalAmount = (classicTshirtQty * price) + (limitedTshirtQty * 100) + (mugQty * 60) + (bagQty * 80);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -61,13 +115,12 @@ const OrderModal: React.FC<OrderModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         data-aos="zoom-in"
       >
-        {/* Header */}
         <div className="modal-header">
           <div className="modal-title-group">
             <div className="modal-badge">
               <FiShoppingBag /> Official Order Selection
             </div>
-            <h3 className="modal-headline">Place Your T-Shirt Order</h3>
+            <h3 className="modal-headline">Place Your Merchandise Order</h3>
             <p className="modal-subtext">{className} · Class of {classYear}</p>
           </div>
           <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
@@ -75,21 +128,41 @@ const OrderModal: React.FC<OrderModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body */}
         <div className="modal-body">
-          {/* Size Selector */}
-          <SizeSelector selected={size} onSelect={onSizeSelect} />
-          {errors.size && <p className="form-error-standalone">{errors.size}</p>}
+          <div className="section-card">
+            <h3 className="section-title">Select Merchandise</h3>
+            
+            {/* Classic T-Shirt */}
+            <div style={{ marginBottom: classicTshirtQty > 0 ? '15px' : '0' }}>
+              <QuantityControl label={tshirtName || 'Classic T-Shirt'} price={price} quantity={classicTshirtQty} onChange={onClassicTshirtQtyChange} min={0} />
+              {classicTshirtQty > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  {Array.from({ length: classicTshirtQty }).map((_, i) => (
+                    <SizeDropdown key={`classic-${i}`} label={`Shirt ${i + 1}`} selected={classicTshirtSizes[i] || ''} onSelect={(size: string) => onClassicTshirtSizeChange(i, size)} />
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* Quantity Selector */}
-          <QuantitySelector
-            quantity={quantity}
-            price={price}
-            feePercentage={feePercentage}
-            onChange={onQuantityChange}
-          />
+            {/* Limited Edition T-Shirt */}
+            <div style={{ marginBottom: limitedTshirtQty > 0 ? '15px' : '0' }}>
+              <QuantityControl label="Limited Edition T-Shirt" price={100} quantity={limitedTshirtQty} onChange={onLimitedTshirtQtyChange} min={0} />
+              {limitedTshirtQty > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  {Array.from({ length: limitedTshirtQty }).map((_, i) => (
+                    <SizeDropdown key={`limited-${i}`} label={`Shirt ${i + 1}`} selected={limitedTshirtSizes[i] || ''} onSelect={(size: string) => onLimitedTshirtSizeChange(i, size)} />
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <QuantityControl label="Custom Class Mug" price={60} quantity={mugQty} onChange={onMugQtyChange} min={0} />
+            <QuantityControl label="Tech Legacy Tote Bag" price={80} quantity={bagQty} onChange={onBagQtyChange} min={0} />
+            
+            {errors.size && <p className="form-error-standalone">{errors.size}</p>}
+            {errors.quantity && <p className="form-error-standalone">{errors.quantity}</p>}
+          </div>
 
-          {/* Personal Info Form */}
           <OrderForm
             name={name}
             indexNumber={indexNumber}
@@ -100,19 +173,21 @@ const OrderModal: React.FC<OrderModalProps> = ({
             onPhoneChange={onPhoneChange}
           />
 
-          {/* Order Summary */}
           <OrderSummary
             tshirtName={tshirtName}
-            size={size || '—'}
-            quantity={quantity}
+            classicTshirtQty={classicTshirtQty}
+            classicTshirtSizes={classicTshirtSizes}
+            limitedTshirtQty={limitedTshirtQty}
+            limitedTshirtSizes={limitedTshirtSizes}
+            mugQty={mugQty}
+            bagQty={bagQty}
             price={price}
             feePercentage={feePercentage}
           />
 
-          {/* Payment CTA */}
           <button
             onClick={onSubmit}
-            disabled={submitting}
+            disabled={submitting || totalAmount === 0}
             className="modal-pay-btn"
             id="modal-pay-btn"
           >

@@ -25,7 +25,7 @@ export const initDatabase = async (): Promise<void> => {
         name VARCHAR(150) NOT NULL,
         index_number VARCHAR(100) NOT NULL,
         phone VARCHAR(30) NOT NULL,
-        size VARCHAR(10) NOT NULL,
+        size TEXT NOT NULL,
         quantity INT NOT NULL DEFAULT 1,
         amount DECIMAL(10,2) NOT NULL,
         payment_status ENUM('PENDING', 'PAID', 'FAILED') DEFAULT 'PENDING',
@@ -48,6 +48,14 @@ export const initDatabase = async (): Promise<void> => {
       `);
     } catch (e: any) {
       // Column already exists, ignore error code 1060 (Duplicate column name)
+    }
+
+    try {
+      await connection.execute(`
+        ALTER TABLE orders MODIFY COLUMN size TEXT NOT NULL
+      `);
+    } catch (e: any) {
+      console.log('Could not modify size column:', e.message);
     }
 
     connection.release();

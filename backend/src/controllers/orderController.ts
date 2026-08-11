@@ -39,7 +39,7 @@ export const initializePayment = async (req: Request, res: Response): Promise<vo
     }
 
     const qty = parseInt(quantity || 1, 10);
-    const amount = orderService.calculateOrderAmount(qty);
+    const amount = orderService.calculateOrderAmount(qty, size);
     const paystackReference = `PAY-${order_reference}-${Date.now()}`;
     const callbackUrl = `${config.frontendUrl}/payment/verify?reference=${paystackReference}`;
     const customerEmail = email || `${phone ? phone.trim() : 'student'}@order.ckltech.com`;

@@ -33,8 +33,21 @@ export const generateOrderReference = (): string => {
   return `FTS-${year}-${uniquePart}`;
 };
 
-export const calculateOrderAmount = (quantity: number): number => {
-  const baseAmount = config.tshirt.price * quantity;
+export const calculateOrderAmount = (quantity: number, sizePayload?: string): number => {
+  let baseAmount = 0;
+  try {
+    if (sizePayload && sizePayload.startsWith('{')) {
+      const items = JSON.parse(sizePayload);
+      if (items.classicTshirt?.qty) baseAmount += config.tshirt.price * items.classicTshirt.qty;
+      if (items.limitedTshirt?.qty) baseAmount += 100 * items.limitedTshirt.qty;
+      if (items.mug?.qty) baseAmount += 60 * items.mug.qty;
+      if (items.bag?.qty) baseAmount += 80 * items.bag.qty;
+    } else {
+      baseAmount = config.tshirt.price * quantity;
+    }
+  } catch (e) {
+    baseAmount = config.tshirt.price * quantity;
+  }
   const fee = (baseAmount * config.paystack.feePercentage) / 100;
   return Number((baseAmount + fee).toFixed(2));
 };
@@ -42,7 +55,7 @@ export const calculateOrderAmount = (quantity: number): number => {
 // Create temporary order reference and calculated amount for Paystack checkout
 export const prepareOrder = async (data: OrderData) => {
   const orderReference = generateOrderReference();
-  const amount = calculateOrderAmount(data.quantity);
+  const amount = calculateOrderAmount(data.quantity, data.size);
   return {
     order_reference: orderReference,
     amount,
