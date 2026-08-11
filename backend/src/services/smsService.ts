@@ -46,3 +46,35 @@ export const sendPurchaseSuccessSMS = async ({ to, name, orderReference }: SendS
     return false;
   }
 };
+
+export const sendDeliverySMS = async ({ to, name, orderReference }: SendSmsParams): Promise<boolean> => {
+  try {
+    const formattedPhone = formatGhanaPhoneNumber(to);
+    const senderId = config.arkesel.senderId || 'CKLTECH';
+    const apiKey = config.arkesel.apiKey;
+
+    if (!apiKey) {
+      console.warn('Arkesel SMS API Key is missing. Skipping SMS dispatch.');
+      return false;
+    }
+
+    const message = `Dear ${name}, your order #${orderReference} has been successfully delivered. Please be reminded that this t-shirt is mandatory for our final examination paper and the class photoshoot scheduled for Thursday, August 20th. Thank you! - ${config.tshirt.className}`;
+
+    const response = await axios.get('https://sms.arkesel.com/sms/api', {
+      params: {
+        action: 'send-sms',
+        api_key: apiKey,
+        to: formattedPhone,
+        from: senderId,
+        sms: message,
+      },
+      timeout: 10000,
+    });
+
+    console.log('Arkesel SMS API Response (Delivery):', response.data);
+    return true;
+  } catch (error: any) {
+    console.error('Failed to send delivery SMS via Arkesel:', error?.response?.data || error.message);
+    return false;
+  }
+};

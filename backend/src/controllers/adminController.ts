@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as orderService from '../services/orderService';
 import { Parser } from 'json2csv';
+import { sendDeliverySMS } from '../services/smsService';
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   res.json({ message: 'Login successful' });
@@ -44,6 +45,17 @@ export const updateDeliveryStatus = async (req: Request, res: Response): Promise
     if (!updated) {
       res.status(404).json({ error: 'Order not found' });
       return;
+    }
+
+    if (delivery_status === 'DELIVERED') {
+      const order = await orderService.getOrderById(id);
+      if (order) {
+        sendDeliverySMS({
+          to: order.phone,
+          name: order.name,
+          orderReference: order.order_reference,
+        }).catch(err => console.error('Non-blocking delivery SMS error:', err));
+      }
     }
 
     res.json({ message: 'Delivery status updated successfully', delivery_status });

@@ -127,6 +127,14 @@ export const getOrderByPaystackReference = async (paystackRef: string) => {
   return rows[0] || null;
 };
 
+export const getOrderById = async (id: number) => {
+  const [rows] = await pool.execute<Order[]>(
+    'SELECT * FROM orders WHERE id = ?',
+    [id]
+  );
+  return rows[0] || null;
+};
+
 export const updatePaystackReference = async (orderReference: string, paystackReference: string) => {
   await pool.execute(
     'UPDATE orders SET paystack_reference = ? WHERE order_reference = ?',
