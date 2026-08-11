@@ -48,8 +48,10 @@ export const calculateOrderAmount = (quantity: number, sizePayload?: string): nu
   } catch (e) {
     baseAmount = config.tshirt.price * quantity;
   }
-  const fee = (baseAmount * config.paystack.feePercentage) / 100;
-  return Number((baseAmount + fee).toFixed(2));
+  
+  // Calculate total amount to ensure exact baseAmount is received after Paystack fee
+  const totalAmount = baseAmount / (1 - config.paystack.feePercentage / 100);
+  return Number(totalAmount.toFixed(2));
 };
 
 // Create temporary order reference and calculated amount for Paystack checkout

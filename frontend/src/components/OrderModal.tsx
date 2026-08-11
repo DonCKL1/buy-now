@@ -106,7 +106,8 @@ const OrderModal: React.FC<OrderModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const totalAmount = (classicTshirtQty * price) + (limitedTshirtQty * 80) + (mugQty * 60) + (bagQty * 80);
+  const subtotal = (classicTshirtQty * price) + (limitedTshirtQty * 80) + (mugQty * 60) + (bagQty * 80);
+  const totalAmount = subtotal > 0 ? subtotal / (1 - feePercentage / 100) : 0;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
