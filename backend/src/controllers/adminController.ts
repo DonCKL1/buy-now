@@ -80,6 +80,36 @@ export const exportOrders = async (req: Request, res: Response): Promise<void> =
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
     const orders = await orderService.getAllOrders(undefined, status);
 
+    const formatSizePayload = (sizeStr: string) => {
+      if (!sizeStr || !sizeStr.startsWith('{')) return sizeStr;
+      try {
+        const data = JSON.parse(sizeStr);
+        const parts = [];
+        if (data.classicTshirt?.qty > 0) {
+          const sizes = (data.classicTshirt.sizes || []).filter(Boolean).join(', ');
+          parts.push(`${data.classicTshirt.qty}x Classic ${sizes ? `(${sizes})` : ''}`);
+        }
+        if (data.limitedTshirt?.qty > 0) {
+          const sizes = (data.limitedTshirt.sizes || []).filter(Boolean).join(', ');
+          parts.push(`${data.limitedTshirt.qty}x Ltd Edition ${sizes ? `(${sizes})` : ''}`);
+        }
+        if (data.mug?.qty > 0) {
+          parts.push(`${data.mug.qty}x Mug`);
+        }
+        if (data.bag?.qty > 0) {
+          parts.push(`${data.bag.qty}x Tote Bag`);
+        }
+        return parts.join(' | ') || sizeStr;
+      } catch (e) {
+        return sizeStr;
+      }
+    };
+
+    const formattedOrders = orders.map((order) => ({
+      ...order,
+      size: formatSizePayload(order.size),
+    }));
+
     const fields = [
       { label: 'Order Reference', value: 'order_reference' },
       { label: 'Name', value: 'name' },
@@ -94,7 +124,7 @@ export const exportOrders = async (req: Request, res: Response): Promise<void> =
     ];
 
     const parser = new Parser({ fields });
-    const csv = parser.parse(orders);
+    const csv = parser.parse(formattedOrders);
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename=orders-${new Date().toISOString().split('T')[0]}.csv`);
