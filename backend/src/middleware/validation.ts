@@ -66,6 +66,6 @@ export const orderValidation = validate([
   { field: 'name', label: 'Full name', required: true, minLength: 2, maxLength: 150 },
   { field: 'index_number', label: 'Index number', required: true, minLength: 2, maxLength: 100 },
   { field: 'phone', label: 'Phone number', required: true, minLength: 9, maxLength: 30 },
-  { field: 'size', label: 'Size', required: true, isIn: ['S', 'M', 'L', 'XL', 'XXL'] },
+  { field: 'size', label: 'Size', required: true },
   { field: 'quantity', label: 'Quantity', required: true, isNumber: true, min: 1 },
 ]);
