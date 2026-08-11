@@ -263,6 +263,31 @@ const Admin: React.FC = () => {
     return `GHS ${Number(amount).toLocaleString('en-GH', { minimumFractionDigits: 2 })}`;
   };
 
+  const formatSizePayload = (sizeStr: string) => {
+    if (!sizeStr || !sizeStr.startsWith('{')) return sizeStr;
+    try {
+      const data = JSON.parse(sizeStr);
+      const parts = [];
+      if (data.classicTshirt?.qty > 0) {
+        const sizes = (data.classicTshirt.sizes || []).filter(Boolean).join(', ');
+        parts.push(`${data.classicTshirt.qty}x Classic ${sizes ? `(${sizes})` : ''}`);
+      }
+      if (data.limitedTshirt?.qty > 0) {
+        const sizes = (data.limitedTshirt.sizes || []).filter(Boolean).join(', ');
+        parts.push(`${data.limitedTshirt.qty}x Ltd Edition ${sizes ? `(${sizes})` : ''}`);
+      }
+      if (data.mug?.qty > 0) {
+        parts.push(`${data.mug.qty}x Mug`);
+      }
+      if (data.bag?.qty > 0) {
+        parts.push(`${data.bag.qty}x Tote Bag`);
+      }
+      return parts.join(' | ') || sizeStr;
+    } catch (e) {
+      return sizeStr;
+    }
+  };
+
   // ──── Login Screen ────
   if (!isLoggedIn) {
     return (
@@ -532,7 +557,7 @@ const Admin: React.FC = () => {
                         {order.phone}
                       </a>
                     </td>
-                    <td style={{ fontWeight: 800 }}>{order.size}</td>
+                    <td style={{ fontWeight: 800 }}>{formatSizePayload(order.size)}</td>
                     <td style={{ textAlign: 'center', fontWeight: 700 }}>{order.quantity}</td>
                     <td style={{ fontWeight: 800, color: '#2563eb' }}>{formatCurrency(order.amount)}</td>
                     <td>
@@ -607,7 +632,7 @@ const Admin: React.FC = () => {
                   </div>
 
                   <div className="mobile-card-details-row">
-                    <span className="mobile-pill size">Size: <strong>{order.size}</strong></span>
+                    <span className="mobile-pill size">Items: <strong>{formatSizePayload(order.size)}</strong></span>
                     <span className="mobile-pill qty">Qty: <strong>{order.quantity}</strong></span>
                     <span className="mobile-card-amount">{formatCurrency(order.amount)}</span>
                   </div>
@@ -740,7 +765,7 @@ const Admin: React.FC = () => {
               <div className="summary-card" style={{ background: '#eff6ff', borderColor: '#bfdbfe' }}>
                 <div className="summary-row">
                   <span className="label">T-Shirt Size</span>
-                  <span className="value" style={{ color: '#2563eb' }}>{selectedOrder.size}</span>
+                  <span className="value" style={{ color: '#2563eb' }}>{formatSizePayload(selectedOrder.size)}</span>
                 </div>
                 <div className="summary-row">
                   <span className="label">Quantity</span>
