@@ -21,6 +21,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   mugQty,
   bagQty,
   price,
+  feePercentage,
 }) => {
   const subtotal = (classicTshirtQty * price) + (limitedTshirtQty * 80) + (mugQty * 60) + (bagQty * 80);
 
