@@ -14,6 +14,31 @@ interface SuccessMessageProps {
   onDone: () => void;
 }
 
+const formatSizePayload = (sizeStr: string) => {
+  if (!sizeStr || !sizeStr.startsWith('{')) return sizeStr;
+  try {
+    const data = JSON.parse(sizeStr);
+    const parts = [];
+    if (data.classicTshirt?.qty > 0) {
+      const sizes = (data.classicTshirt.sizes || []).filter(Boolean).join(', ');
+      parts.push(`${data.classicTshirt.qty}x Classic ${sizes ? `(${sizes})` : ''}`);
+    }
+    if (data.limitedTshirt?.qty > 0) {
+      const sizes = (data.limitedTshirt.sizes || []).filter(Boolean).join(', ');
+      parts.push(`${data.limitedTshirt.qty}x Ltd Edition ${sizes ? `(${sizes})` : ''}`);
+    }
+    if (data.mug?.qty > 0) {
+      parts.push(`${data.mug.qty}x Mug`);
+    }
+    if (data.bag?.qty > 0) {
+      parts.push(`${data.bag.qty}x Tote Bag`);
+    }
+    return parts.join(' | ') || sizeStr;
+  } catch (e) {
+    return sizeStr;
+  }
+};
+
 const SuccessMessage: React.FC<SuccessMessageProps> = ({ order, onDone }) => {
   return (
     <div className="success-container page-enter">
@@ -37,8 +62,8 @@ const SuccessMessage: React.FC<SuccessMessageProps> = ({ order, onDone }) => {
           <span className="value">GHS {Number(order.amount).toFixed(2)}</span>
         </div>
         <div className="success-detail-row">
-          <span className="label">SIZE</span>
-          <span className="value size-pill-sm">{order.size}</span>
+          <span className="label">ITEMS / SIZE</span>
+          <span className="value size-pill-sm">{formatSizePayload(order.size)}</span>
         </div>
         <div className="success-detail-row">
           <span className="label">QUANTITY</span>
