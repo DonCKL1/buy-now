@@ -15,7 +15,7 @@ export const config = {
   paystack: {
     secretKey: process.env.PAYSTACK_SECRET_KEY || '',
     publicKey: process.env.PAYSTACK_PUBLIC_KEY || '',
-    feePercentage: parseFloat(process.env.PAYSTACK_FEE_PERCENTAGE || '2.0'),
+    feePercentage: 2.0,
   },
 
   arkesel: {

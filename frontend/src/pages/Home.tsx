@@ -346,7 +346,7 @@ const Home: React.FC<HomeProps> = ({
   }
 
   const price = config.tshirt.price;
-  const feePct = config.paystackFeePercentage || 1.95;
+  const feePct = 2.0;
 
   // Success state
   if (pageState === 'success' && orderResult) {
