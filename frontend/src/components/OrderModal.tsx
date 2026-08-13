@@ -70,6 +70,7 @@ const SizeDropdown = ({ label, selected, onSelect }: any) => (
       <option value="L">Large (L)</option>
       <option value="XL">X-Large (XL)</option>
       <option value="XXL">2X-Large (XXL)</option>
+      <option value="3XL">3X-Large (3XL)</option>
     </select>
   </div>
 );

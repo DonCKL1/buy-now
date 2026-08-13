@@ -16,7 +16,7 @@ const ProductShowcase: React.FC<ProductShowcaseProps> = ({
   price,
   onOrderClick,
 }) => {
-  const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+  const sizes = ['S', 'M', 'L', 'XL', 'XXL', '3XL'];
 
   const products = [
     {

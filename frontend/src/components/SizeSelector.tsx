@@ -7,6 +7,7 @@ const SIZES = [
   { label: 'L', name: 'Large' },
   { label: 'XL', name: 'X-Large' },
   { label: 'XXL', name: '2X-Large' },
+  { label: '3XL', name: '3X-Large' },
 ];
 
 interface SizeSelectorProps {

@@ -16,7 +16,7 @@ const Features: React.FC = () => {
     {
       icon: <FiMaximize2 />,
       title: 'MULTIPLE SIZES',
-      desc: 'Accurately sized options from Small (S) to Extra Extra Large (XXL).',
+      desc: 'Accurately sized options from Small (S) to 3X-Large (3XL).',
     },
     {
       icon: <FiBookmark />,
