@@ -846,7 +846,6 @@ const Admin: React.FC = () => {
                     {formatDate(selectedOrder.created_at)}
                   </span>
                 </div>
-                </div>
               </div>
 
               {showMessageInput && (
