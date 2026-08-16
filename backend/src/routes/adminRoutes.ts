@@ -25,4 +25,7 @@ router.delete('/orders/:id', adminController.deleteOrder);
 // Export orders as CSV
 router.get('/orders/export', adminController.exportOrders);
 
+// Send custom message to order
+router.post('/orders/:id/message', adminController.sendOrderMessage);
+
 export default router;

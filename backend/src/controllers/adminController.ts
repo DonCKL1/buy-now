@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as orderService from '../services/orderService';
 import { Parser } from 'json2csv';
-import { sendDeliverySMS } from '../services/smsService';
+import { sendDeliverySMS, sendCustomSMS } from '../services/smsService';
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   res.json({ message: 'Login successful' });
@@ -145,5 +145,40 @@ export const exportOrders = async (req: Request, res: Response): Promise<void> =
   } catch (error: any) {
     console.error('Export orders error:', error);
     res.status(500).json({ error: 'Failed to export orders' });
+  }
+};
+
+export const sendOrderMessage = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const paramId = req.params.id;
+    const id = parseInt(Array.isArray(paramId) ? paramId[0] : paramId, 10);
+    const { customMessage } = req.body;
+
+    if (isNaN(id) || !customMessage) {
+      res.status(400).json({ error: 'Invalid order ID or message content' });
+      return;
+    }
+
+    const order = await orderService.getOrderById(id);
+    if (!order) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    const sent = await sendCustomSMS({
+      to: order.phone,
+      name: order.name,
+      orderReference: order.order_reference,
+      customMessage: customMessage,
+    });
+
+    if (sent) {
+      res.json({ message: 'Message sent successfully' });
+    } else {
+      res.status(500).json({ error: 'Failed to send message via Arkesel' });
+    }
+  } catch (error: any) {
+    console.error('Send order message error:', error);
+    res.status(500).json({ error: 'Internal server error while sending message' });
   }
 };

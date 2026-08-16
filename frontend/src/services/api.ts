@@ -195,3 +195,15 @@ export const exportOrdersCSV = async (status?: string, deliveryStatus?: string):
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
 };
+
+export const sendOrderMessage = async (id: number, customMessage: string): Promise<boolean> => {
+  try {
+    const { data } = await api.post(`/admin/orders/${id}/message`, { customMessage }, {
+      headers: getAdminHeaders(),
+    });
+    return data.message === 'Message sent successfully';
+  } catch {
+    return false;
+  }
+};
+

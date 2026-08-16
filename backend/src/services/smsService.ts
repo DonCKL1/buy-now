@@ -78,3 +78,40 @@ export const sendDeliverySMS = async ({ to, name, orderReference }: SendSmsParam
     return false;
   }
 };
+
+export interface SendCustomSmsParams extends SendSmsParams {
+  customMessage: string;
+}
+
+export const sendCustomSMS = async ({ to, name, orderReference, customMessage }: SendCustomSmsParams): Promise<boolean> => {
+  try {
+    const formattedPhone = formatGhanaPhoneNumber(to);
+    const senderId = config.arkesel.senderId || 'CKLTECH';
+    const apiKey = config.arkesel.apiKey;
+
+    if (!apiKey) {
+      console.warn('Arkesel SMS API Key is missing. Skipping SMS dispatch.');
+      return false;
+    }
+
+    const message = `Hello ${name},\n\n${customMessage}\n\nOrder ID: ${orderReference}\n\nThank you! - ${config.tshirt.className}`;
+
+    const response = await axios.get('https://sms.arkesel.com/sms/api', {
+      params: {
+        action: 'send-sms',
+        api_key: apiKey,
+        to: formattedPhone,
+        from: senderId,
+        sms: message,
+      },
+      timeout: 10000,
+    });
+
+    console.log('Arkesel SMS API Response (Custom):', response.data);
+    return true;
+  } catch (error: any) {
+    console.error('Failed to send custom SMS via Arkesel:', error?.response?.data || error.message);
+    return false;
+  }
+};
+

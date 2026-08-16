@@ -23,6 +23,8 @@ import {
   FiClock,
   FiCheckSquare,
   FiSquare,
+  FiMessageSquare,
+  FiSend,
 } from 'react-icons/fi';
 import Swal from 'sweetalert2';
 
@@ -34,6 +36,7 @@ import {
   updateDeliveryStatus,
   deleteOrder,
   exportOrdersCSV,
+  sendOrderMessage,
   Order,
   Stats,
 } from '../services/api';
@@ -54,6 +57,11 @@ const Admin: React.FC = () => {
 
   // Selected Order for viewing in modal card
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  
+  // Custom Message State
+  const [showMessageInput, setShowMessageInput] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [messageLoading, setMessageLoading] = useState(false);
 
   // Check if already logged in
   useEffect(() => {
@@ -221,6 +229,42 @@ const Admin: React.FC = () => {
           confirmButtonColor: '#2563eb',
         });
       }
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!selectedOrder || !messageText.trim()) return;
+    
+    setMessageLoading(true);
+    try {
+      const success = await sendOrderMessage(selectedOrder.id, messageText.trim());
+      if (success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Message Sent',
+          text: 'Custom SMS has been sent successfully.',
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        setMessageText('');
+        setShowMessageInput(false);
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed',
+          text: 'Failed to send the message. Please check the SMS provider configuration.',
+          confirmButtonColor: '#2563eb',
+        });
+      }
+    } catch {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An unexpected error occurred while sending the message.',
+        confirmButtonColor: '#2563eb',
+      });
+    } finally {
+      setMessageLoading(false);
     }
   };
 
@@ -686,14 +730,14 @@ const Admin: React.FC = () => {
 
       {/* View Order Detail Modal Card */}
       {selectedOrder && (
-        <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
+        <div className="modal-overlay" onClick={() => { setSelectedOrder(null); setShowMessageInput(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
             <div className="modal-header">
               <div>
                 <div className="modal-badge"><FiShoppingBag /> Order Details</div>
                 <h3 className="modal-headline" style={{ fontFamily: 'monospace' }}>{selectedOrder.order_reference}</h3>
               </div>
-              <button className="modal-close-btn" onClick={() => setSelectedOrder(null)}>
+              <button className="modal-close-btn" onClick={() => { setSelectedOrder(null); setShowMessageInput(false); }}>
                 <FiX size={22} />
               </button>
             </div>
@@ -802,13 +846,60 @@ const Admin: React.FC = () => {
                     {formatDate(selectedOrder.created_at)}
                   </span>
                 </div>
+                </div>
               </div>
 
+              {showMessageInput && (
+                <div className="summary-card" style={{ background: '#f0fdf4', borderColor: '#bbf7d0', marginTop: '0.5rem', animation: 'fadeIn 0.2s ease-out' }}>
+                  <div style={{ marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: '#166534' }}>
+                    <FiMessageSquare className="inline-icon" /> Send Custom SMS to Student
+                  </div>
+                  <textarea
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    className="form-input"
+                    rows={3}
+                    placeholder="Enter your custom message (e.g. Please come for your order...)"
+                    style={{ background: 'white', borderColor: '#bbf7d0', resize: 'none' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="toolbar-btn"
+                      onClick={() => setShowMessageInput(false)}
+                      style={{ background: 'white', border: '1px solid #d1d5db', color: '#4b5563' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="toolbar-btn"
+                      onClick={handleSendMessage}
+                      disabled={messageLoading || !messageText.trim()}
+                      style={{ background: '#10b981', color: 'white', border: 'none', gap: '0.4rem', opacity: (!messageText.trim() || messageLoading) ? 0.6 : 1 }}
+                    >
+                      {messageLoading ? <div className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }}></div> : <FiSend size={15} />}
+                      {messageLoading ? 'Sending...' : 'Send Message'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                {!showMessageInput && (
+                  <button
+                    type="button"
+                    className="toolbar-btn"
+                    onClick={() => setShowMessageInput(true)}
+                    style={{ flex: 1, justifyContent: 'center', background: '#10b981', color: 'white', border: 'none' }}
+                  >
+                    <FiMessageSquare size={16} /> Send SMS Reminder
+                  </button>
+                )}
                 <button
                   type="button"
                   className="toolbar-btn"
-                  onClick={() => setSelectedOrder(null)}
+                  onClick={() => { setSelectedOrder(null); setShowMessageInput(false); }}
                   style={{ flex: 1, justifyContent: 'center' }}
                 >
                   Close
