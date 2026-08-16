@@ -207,3 +207,31 @@ export const sendOrderMessage = async (id: number, customMessage: string): Promi
   }
 };
 
+export interface BulkMessageResponse {
+  success: boolean;
+  successCount: number;
+  failCount: number;
+  totalCount: number;
+}
+
+export const sendBulkOrderMessage = async (customMessage: string): Promise<BulkMessageResponse> => {
+  try {
+    const { data } = await api.post(`/admin/orders/bulk-message`, { customMessage }, {
+      headers: getAdminHeaders(),
+    });
+    return {
+      success: true,
+      successCount: data.successCount,
+      failCount: data.failCount,
+      totalCount: data.totalCount,
+    };
+  } catch {
+    return {
+      success: false,
+      successCount: 0,
+      failCount: 0,
+      totalCount: 0,
+    };
+  }
+};
+

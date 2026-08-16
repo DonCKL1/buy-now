@@ -28,4 +28,7 @@ router.get('/orders/export', adminController.exportOrders);
 // Send custom message to order
 router.post('/orders/:id/message', adminController.sendOrderMessage);
 
+// Send bulk custom message to pending deliveries
+router.post('/orders/bulk-message', adminController.sendBulkOrderMessage);
+
 export default router;

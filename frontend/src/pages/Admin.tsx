@@ -37,6 +37,7 @@ import {
   deleteOrder,
   exportOrdersCSV,
   sendOrderMessage,
+  sendBulkOrderMessage,
   Order,
   Stats,
 } from '../services/api';
@@ -288,6 +289,70 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleBulkMessage = async () => {
+    const pendingCount = stats?.pendingDeliveries || 0;
+    if (pendingCount === 0) {
+      Swal.fire({
+        icon: 'info',
+        title: 'No Pending Deliveries',
+        text: 'There are currently no pending deliveries to message.',
+        confirmButtonColor: '#2563eb',
+      });
+      return;
+    }
+
+    const { value: text } = await Swal.fire({
+      title: 'Send Bulk SMS',
+      input: 'textarea',
+      inputLabel: `Message to all ${pendingCount} pending deliveries`,
+      inputPlaceholder: 'Type your custom message here...',
+      inputAttributes: {
+        'aria-label': 'Type your custom message here'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Send to All Pending',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#64748b',
+    });
+
+    if (text) {
+      Swal.fire({
+        title: 'Sending Messages...',
+        html: 'Please wait while messages are being sent via Arkesel SMS.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      try {
+        const response = await sendBulkOrderMessage(text);
+        if (response.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Bulk Messaging Complete',
+            text: `Successfully sent ${response.successCount} messages. Failed: ${response.failCount}.`,
+            confirmButtonColor: '#10b981',
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to send bulk messages.',
+            confirmButtonColor: '#2563eb',
+          });
+        }
+      } catch {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An unexpected error occurred while sending bulk messages.',
+          confirmButtonColor: '#2563eb',
+        });
+      }
+    }
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchData();
@@ -536,6 +601,10 @@ const Admin: React.FC = () => {
           <button type="button" className="toolbar-btn export" onClick={handleExport} id="admin-export-btn">
             <FiDownload size={16} />
             Export CSV
+          </button>
+          <button type="button" className="toolbar-btn" onClick={handleBulkMessage} id="admin-bulk-msg-btn" style={{ background: '#10b981', color: 'white', borderColor: '#059669' }}>
+            <FiMessageSquare size={16} />
+            Bulk SMS
           </button>
         </form>
 

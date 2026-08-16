@@ -182,3 +182,52 @@ export const sendOrderMessage = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ error: 'Internal server error while sending message' });
   }
 };
+
+export const sendBulkOrderMessage = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { customMessage } = req.body;
+
+    if (!customMessage) {
+      res.status(400).json({ error: 'Message content is required' });
+      return;
+    }
+
+    // Fetch all orders with PENDING delivery status
+    const pendingOrders = await orderService.getAllOrders(undefined, undefined, 'PENDING');
+
+    if (pendingOrders.length === 0) {
+      res.status(404).json({ error: 'No pending deliveries found' });
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Send SMS sequentially or concurrently (sequentially to avoid rate limiting)
+    for (const order of pendingOrders) {
+      const sent = await sendCustomSMS({
+        to: order.phone,
+        name: order.name,
+        orderReference: order.order_reference,
+        customMessage: customMessage,
+      });
+
+      if (sent) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    }
+
+    res.json({
+      message: 'Bulk messaging completed',
+      successCount,
+      failCount,
+      totalCount: pendingOrders.length,
+    });
+  } catch (error: any) {
+    console.error('Send bulk order message error:', error);
+    res.status(500).json({ error: 'Internal server error while sending bulk messages' });
+  }
+};
+
