@@ -63,6 +63,7 @@ const Admin: React.FC = () => {
   const [showMessageInput, setShowMessageInput] = useState(false);
   const [messageText, setMessageText] = useState('');
   const [messageLoading, setMessageLoading] = useState(false);
+  const [selectedOrderIds, setSelectedOrderIds] = useState<number[]>([]);
 
   // Check if already logged in
   useEffect(() => {
@@ -289,6 +290,22 @@ const Admin: React.FC = () => {
     }
   };
 
+  const pendingOrders = orders.filter(o => o.delivery_status === 'PENDING');
+
+  const handleToggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedOrderIds(pendingOrders.map(o => o.id));
+    } else {
+      setSelectedOrderIds([]);
+    }
+  };
+
+  const handleToggleSelectOrder = (id: number) => {
+    setSelectedOrderIds(prev => 
+      prev.includes(id) ? prev.filter(orderId => orderId !== id) : [...prev, id]
+    );
+  };
+
   const handleBulkMessage = async () => {
     const pendingCount = stats?.pendingDeliveries || 0;
     if (pendingCount === 0) {
@@ -301,16 +318,20 @@ const Admin: React.FC = () => {
       return;
     }
 
+    const hasSelection = selectedOrderIds.length > 0;
+    const targetCount = hasSelection ? selectedOrderIds.length : pendingCount;
+    const targetLabel = hasSelection ? 'selected' : 'all';
+
     const { value: text } = await Swal.fire({
       title: 'Send Bulk SMS',
       input: 'textarea',
-      inputLabel: `Message to all ${pendingCount} pending deliveries`,
+      inputLabel: `Message to ${targetCount} ${targetLabel} pending deliveries`,
       inputPlaceholder: 'Type your custom message here...',
       inputAttributes: {
         'aria-label': 'Type your custom message here'
       },
       showCancelButton: true,
-      confirmButtonText: 'Send to All Pending',
+      confirmButtonText: 'Send SMS',
       confirmButtonColor: '#10b981',
       cancelButtonColor: '#64748b',
     });
@@ -326,7 +347,7 @@ const Admin: React.FC = () => {
       });
 
       try {
-        const response = await sendBulkOrderMessage(text);
+        const response = await sendBulkOrderMessage(text, hasSelection ? selectedOrderIds : undefined);
         if (response.success) {
           Swal.fire({
             icon: 'success',
@@ -334,6 +355,8 @@ const Admin: React.FC = () => {
             text: `Successfully sent ${response.successCount} messages. Failed: ${response.failCount}.`,
             confirmButtonColor: '#10b981',
           });
+          // Clear selection on success
+          setSelectedOrderIds([]);
         } else {
           Swal.fire({
             icon: 'error',
@@ -624,6 +647,14 @@ const Admin: React.FC = () => {
             <table className="orders-table">
               <thead>
                 <tr>
+                  <th style={{ width: '40px', textAlign: 'center' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={pendingOrders.length > 0 && selectedOrderIds.length === pendingOrders.length}
+                      onChange={handleToggleSelectAll}
+                      title="Select all pending"
+                    />
+                  </th>
                   <th style={{ textAlign: 'center' }}>Delivered</th>
                   <th>Order Ref</th>
                   <th>Student Name</th>
@@ -640,6 +671,15 @@ const Admin: React.FC = () => {
               <tbody>
                 {orders.map((order) => (
                   <tr key={order.id} style={{ background: order.delivery_status === 'DELIVERED' ? '#f0fdf4' : 'transparent' }}>
+                    <td style={{ textAlign: 'center' }}>
+                      <input 
+                        type="checkbox"
+                        checked={selectedOrderIds.includes(order.id)}
+                        onChange={() => handleToggleSelectOrder(order.id)}
+                        disabled={order.delivery_status === 'DELIVERED'}
+                        title={order.delivery_status === 'DELIVERED' ? 'Cannot message delivered items' : 'Select for bulk message'}
+                      />
+                    </td>
                     <td style={{ textAlign: 'center' }}>
                       <button
                         type="button"
@@ -729,7 +769,16 @@ const Admin: React.FC = () => {
                 }}
               >
                 <div className="mobile-card-header">
-                  <span className="mobile-card-ref">{order.order_reference}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input 
+                      type="checkbox"
+                      checked={selectedOrderIds.includes(order.id)}
+                      onChange={() => handleToggleSelectOrder(order.id)}
+                      disabled={order.delivery_status === 'DELIVERED'}
+                      title={order.delivery_status === 'DELIVERED' ? 'Cannot message delivered items' : 'Select for bulk message'}
+                    />
+                    <span className="mobile-card-ref">{order.order_reference}</span>
+                  </div>
                   <span className={`status-badge ${order.payment_status.toLowerCase()}`}>
                     {order.payment_status}
                   </span>

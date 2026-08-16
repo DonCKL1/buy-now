@@ -214,9 +214,9 @@ export interface BulkMessageResponse {
   totalCount: number;
 }
 
-export const sendBulkOrderMessage = async (customMessage: string): Promise<BulkMessageResponse> => {
+export const sendBulkOrderMessage = async (customMessage: string, orderIds?: number[]): Promise<BulkMessageResponse> => {
   try {
-    const { data } = await api.post(`/admin/orders/bulk-message`, { customMessage }, {
+    const { data } = await api.post(`/admin/orders/bulk-message`, { customMessage, orderIds }, {
       headers: getAdminHeaders(),
     });
     return {

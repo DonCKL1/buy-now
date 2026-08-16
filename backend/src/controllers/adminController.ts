@@ -185,7 +185,7 @@ export const sendOrderMessage = async (req: Request, res: Response): Promise<voi
 
 export const sendBulkOrderMessage = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { customMessage } = req.body;
+    const { customMessage, orderIds } = req.body;
 
     if (!customMessage) {
       res.status(400).json({ error: 'Message content is required' });
@@ -193,10 +193,14 @@ export const sendBulkOrderMessage = async (req: Request, res: Response): Promise
     }
 
     // Fetch all orders with PENDING delivery status
-    const pendingOrders = await orderService.getAllOrders(undefined, undefined, 'PENDING');
+    let pendingOrders = await orderService.getAllOrders(undefined, undefined, 'PENDING');
+
+    if (Array.isArray(orderIds) && orderIds.length > 0) {
+      pendingOrders = pendingOrders.filter(order => orderIds.includes(order.id));
+    }
 
     if (pendingOrders.length === 0) {
-      res.status(404).json({ error: 'No pending deliveries found' });
+      res.status(404).json({ error: 'No matching pending deliveries found' });
       return;
     }
 
